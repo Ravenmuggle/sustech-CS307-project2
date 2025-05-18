@@ -14,47 +14,49 @@ public class LRUReplacer {
     }
 
     public int Victim() {
-        if (LRUList.size()>maxSize){
-            Iterator<Integer> reverseIterator=LRUList.descendingIterator();
-            int FirstDeletable=reverseIterator.next();
-            while (pinnedFrames.contains(FirstDeletable){
-                FirstDeletable=reverseIterator.next();
-                //iterating continuing
-            }
-            LRUList.removeLastOccurrence(FirstDeletable);
-            LRUHash.remove(FirstDeletable);
+        if(LRUHash.isEmpty()){
+            return -1;
         }
         else {
-
+            int LRU=LRUList.getFirst();
+            LRUList.removeFirstOccurrence(LRU);
+            LRUHash.remove(LRU);
+            return LRU;
         }
-        return -1;
     }
 
     public void Pin(int frameId) {
-        if(pinnedFrames.contains(frameId)){
-            //doing nothing
-        } else if (LRUHash.contains(frameId)) {
-            LRUHash.remove(frameId);
-            LRUList.removeFirstOccurrence(frameId);
-        }
-        else{
-            pinnedFrames.add(frameId);
-        }
+            if (pinnedFrames.contains(frameId)) {
+                //doing nothing
+            } else if (LRUHash.contains(frameId)) {
+                LRUHash.remove(frameId);
+                LRUList.removeFirstOccurrence(frameId);
+                pinnedFrames.add(frameId);
+            } else {
+                if (size()+1 > maxSize) {
+                    throw new RuntimeException("REPLACER IS FULL");
+                }
+                else {
+                    pinnedFrames.add(frameId);
+                }
+            }
     }
 
 
     public void Unpin(int frameId) {
         if (pinnedFrames.contains(frameId)){
+            pinnedFrames.remove(frameId);
             LRUHash.add(frameId);
-            LRUList.addFirst(frameId);
-            Victim();
+            LRUList.addLast(frameId);
+        }
+        else {
+            throw new RuntimeException("UNPIN PAGE NOT FOUND");
         }
 
     }
 
 
     public int size() {
-
         return LRUList.size() + pinnedFrames.size();
     }
 }
