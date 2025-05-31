@@ -38,11 +38,9 @@ public class MetaManager {
 
     public void dropTable(String tableName) throws DBException {
         if (!tables.containsKey(tableName)) {
-            throw new DBException(ExceptionTypes.TableDoseNotExist(tableName));
-        }else {
+            throw new DBException(ExceptionTypes.TableDoseNotExist(tableName));}
             tables.remove(tableName);
             saveToJson();
-        }
     }
 
     public void addColumnInTable(String tableName, ColumnMeta column) throws DBException {

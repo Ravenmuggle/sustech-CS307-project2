@@ -109,14 +109,17 @@ public class DBManager {
     public void dropTable(String table_name, boolean ifExists) throws DBException {
         if (!isTableExists(table_name)) {
             if (ifExists) {
+                System.out.println(1);
                 return; // 表不存在，但 IF EXISTS 已指定，不报错
             }
             throw new DBException(ExceptionTypes.TABLE_DOSE_NOT_EXIST);
         }
+
         metaManager.dropTable(table_name);
         String data_file = String.format("%s/%s", table_name, "data");
-        bufferPool.DeleteAllPages(data_file);
         diskManager.DeleteFile(data_file);
+
+        bufferPool.DeleteAllPages(data_file);
         recordManager.DeleteFile(data_file);
 
     }

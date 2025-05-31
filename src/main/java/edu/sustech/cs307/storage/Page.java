@@ -21,5 +21,8 @@ public class Page {
     public Page() {
         data = Unpooled.buffer(DEFAULT_PAGE_SIZE);
     }
+    public void releasePage(){
+        this.pin_count=0;
+    }
 
 }

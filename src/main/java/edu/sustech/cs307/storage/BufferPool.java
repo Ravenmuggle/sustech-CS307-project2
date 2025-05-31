@@ -168,8 +168,10 @@ public class BufferPool {
      */
     public boolean DeletePage(PagePosition position) throws DBException {
         Integer frame_id = pageMap.get(position);
+        System.out.println(frame_id);
         if (frame_id != null) {
             Page page = pages.get(frame_id);
+            System.out.println(page.pin_count);
             if (page.pin_count > 0) {
                 return false;
             }
@@ -178,6 +180,7 @@ public class BufferPool {
                 page.dirty = false;
             }
             pages.remove(frame_id);
+            System.out.println(frame_id+"removed");
             pageMap.remove(position);
             freeList.add(frame_id);
             // pin count must be 0
@@ -217,13 +220,27 @@ public class BufferPool {
         ArrayList<PagePosition> positions = new ArrayList<>();
         for (Map.Entry<PagePosition, Integer> entry : this.pageMap.entrySet()) {
             if (entry.getKey().filename.equals(filename)) {
+                System.out.println(entry.getKey().filename);
                 positions.add(entry.getKey());
+            }else {
+                System.out.println("filename mismatch");
             }
+
         }
+        System.out.println(positions.size());
         for (PagePosition position : positions) {
+            Integer frame_id = pageMap.get(position);
+            if (frame_id != null) {
+               pages.get(frame_id).releasePage();// 确保从 LRUReplacer 中移除记录
+            }
+            System.out.println(position);
             DeletePage(position);
         }
     }
+
+
+
+
     public Map<PagePosition, Integer> getpageMap() {
         return pageMap;
     }

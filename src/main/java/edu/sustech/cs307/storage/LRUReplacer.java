@@ -43,16 +43,15 @@ public class LRUReplacer {
     }
 
 
-    public void Unpin(int frameId) {
-        if (pinnedFrames.contains(frameId)){
-            pinnedFrames.remove(frameId);
-            LRUHash.add(frameId);
-            LRUList.addLast(frameId);
-        }
-        else {
-            throw new RuntimeException("UNPIN PAGE NOT FOUND");
-        }
-
+    public void Unpin(int frameId) throws RuntimeException {
+            if (pinnedFrames.contains(frameId)) {
+                pinnedFrames.remove(frameId);
+                LRUHash.add(frameId);
+                LRUList.addLast(frameId);
+            }
+          else{
+//                throw new RuntimeException("UNPIN PAGE NOT FOUND");
+          }
     }
 
 
