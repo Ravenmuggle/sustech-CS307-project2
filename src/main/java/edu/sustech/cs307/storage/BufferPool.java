@@ -101,11 +101,11 @@ public class BufferPool {
         Integer frame_id = pageMap.get(position);
         if (frame_id != null) {
             Page page = pages.get(frame_id);
-            if (page.pin_count == 0) {
+            if (page.pin_count <= 0) {
                 return false;
             }
             page.pin_count--;
-            if (page.pin_count == 0) {
+            if (page.pin_count > 0) {
                 lruReplacer.Unpin(frame_id);
             }
             page.dirty |= is_dirty;
