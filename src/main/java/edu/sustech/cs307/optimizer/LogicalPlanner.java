@@ -2,12 +2,14 @@ package edu.sustech.cs307.optimizer;
 
 import java.io.StringReader;
 
+import edu.sustech.cs307.logicalOperator.dml.DropTableExector;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.parser.JSqlParser;
 import net.sf.jsqlparser.statement.ExplainStatement;
 import net.sf.jsqlparser.statement.ShowStatement;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -39,6 +41,10 @@ public class LogicalPlanner {
             operator = handleInsert(dbManager, insertStmt);
         } else if (stmt instanceof Update updateStmt) {
             operator = handleUpdate(dbManager, updateStmt);
+        } else if (stmt instanceof Drop dropTableStmt) {
+            DropTableExector dropTable = new DropTableExector(dropTableStmt,dbManager,sql);
+            dropTable.execute();
+            return null;
         }
         //todo: add condition of handleDelete
         // functional

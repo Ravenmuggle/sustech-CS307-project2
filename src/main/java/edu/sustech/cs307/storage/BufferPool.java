@@ -188,6 +188,7 @@ public class BufferPool {
 
     }
 
+
     /**
      * 将指定文件的所有页面刷新到磁盘。
      *
@@ -222,6 +223,9 @@ public class BufferPool {
         for (PagePosition position : positions) {
             DeletePage(position);
         }
+    }
+    public Map<PagePosition, Integer> getpageMap() {
+        return pageMap;
     }
 
     /**

@@ -27,7 +27,7 @@ import java.util.Map;
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class DBEntry {
-    public static final String DB_NAME = "CS307-DB";
+    public static final String DB_NAME = "E:\\Class\\princlples of database\\sustech-CS307-project2";
     // for now, we use 256 * 512 * 4096 bytes = 512MB as the pool size
     public static final int POOL_SIZE = 256 * 512;
 

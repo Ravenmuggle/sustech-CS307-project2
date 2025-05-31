@@ -7,12 +7,12 @@ import edu.sustech.cs307.meta.MetaManager;
 import edu.sustech.cs307.meta.TableMeta;
 import edu.sustech.cs307.storage.BufferPool;
 import edu.sustech.cs307.storage.DiskManager;
-import org.apache.commons.lang3.StringUtils;
-import org.pmw.tinylog.Logger;
+import edu.sustech.cs307.storage.PagePosition;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class DBManager {
     private final MetaManager metaManager;
@@ -100,14 +100,30 @@ public class DBManager {
     /**
      * Drops a table from the database by removing its metadata and associated
      * files.
-     * 
+     *
      * @param table_name The name of the table to be dropped
+     * @param ifExists
      * @throws DBException If the table directory does not exist or encounters IO
      *                     errors during deletion
      */
-    public void dropTable(String table_name) throws DBException {
-        // todo: finish drop table method
+    public void dropTable(String table_name, boolean ifExists) throws DBException {
+        if (!isTableExists(table_name)) {
+            if (ifExists) {
+                return; // 表不存在，但 IF EXISTS 已指定，不报错
+            }
+            throw new DBException(ExceptionTypes.TABLE_DOSE_NOT_EXIST);
+        }
+        metaManager.dropTable(table_name);
+        String data_file = String.format("%s/%s", table_name, "data");
+        bufferPool.DeleteAllPages(data_file);
+        diskManager.DeleteFile(data_file);
+        recordManager.DeleteFile(data_file);
+
     }
+
+
+
+
 
     /**
      * Recursively deletes a directory and all its contents.

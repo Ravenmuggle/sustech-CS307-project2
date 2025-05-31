@@ -9,6 +9,7 @@ import edu.sustech.cs307.exception.ExceptionTypes;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +37,12 @@ public class DiskManager {
         File META_FILE = new File(path.toString());
         if (!META_FILE.exists()) {
             Logger.info("File does not exist, creating a new one...");
+            try {
+                Files.createDirectories(path.getParent());  // 确保目录存在
+                Files.write(path, "{}".getBytes());  // 写入空 JSON
+            } catch (IOException e) {
+                throw new DBException(ExceptionTypes.BadIOError("Failed to create meta file: " + e.getMessage()));
+            }
             return Map.of();
         }
         try (Reader reader = new FileReader(META_FILE)) {
@@ -51,7 +58,7 @@ public class DiskManager {
         } catch (Exception e) {
             throw new DBException(ExceptionTypes.UnableLoadMetadata(e.getMessage()));
         }
-    };
+    }
 
     /**
      * 将 DiskManager 的元数据转储到指定的元文件中。
@@ -190,7 +197,11 @@ public class DiskManager {
             if (!file.delete()) {
                 throw new DBException(ExceptionTypes.BadIOError("File deletion failed: " + real_path));
             }
-            this.filePages.remove(filename);
+            Integer droppage=filePages.get(filename);
+            if (droppage != null) {
+                this.filePages.remove(filename);
+
+            }
         }
     }
 }
