@@ -139,10 +139,10 @@ public class DBEntry {
 
     private static String getSperator(int width) {
         // ───────────────
-        StringBuilder line = new StringBuilder("+");
+        StringBuilder line = new StringBuilder("|");
         for (int i = 0; i < width; i++) {
             line.append("───────────────");
-            line.append("+");
+            line.append("|");
         }
         return line.toString();
     }

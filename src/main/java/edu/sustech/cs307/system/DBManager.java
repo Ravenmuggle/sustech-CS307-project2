@@ -77,11 +77,20 @@ public class DBManager {
         Logger.info(getStartEndLine(1, false));
     }
 
-    public void descTable(String table_name) {
-        throw new RuntimeException("Not implemented yet");
+    public void descTable(String table_name) throws DBException {
+        //throw new RuntimeException("Not implemented yet");
         //todo: complete describe table
         // | -- TABLE Field -- | -- Column Type --|
         // | --  ${table field} --| -- ${table type} --|
+        TableMeta tableMeta = metaManager.getTable(table_name);
+        ArrayList<ColumnMeta> columns = tableMeta.columns_list;
+        Logger.info(getStartEndLine(2, true));
+        Logger.info(getDescribeString("Field", "Type"));
+        Logger.info(getSperator(2));
+        for (ColumnMeta column : columns) {
+            Logger.info(getDescribeString(column.name, column.type.toString()));
+        }
+        Logger.info(getStartEndLine(2, false));
     }
 
     /**
@@ -195,12 +204,21 @@ public class DBManager {
         return stringBuilder.toString();
     }
 
+    private static String getDescribeString(String field, String type) {
+        StringBuilder stringBuilder = new StringBuilder("|");
+        String centeredText = StringUtils.center(field, 15, ' ');
+        stringBuilder.append(centeredText).append("|");
+        centeredText = StringUtils.center(type, 15, ' ');
+        stringBuilder.append(centeredText).append("|");
+        return stringBuilder.toString();
+    }
+
     private static String getSperator(int width) {
         // ───────────────
-        StringBuilder line = new StringBuilder("+");
+        StringBuilder line = new StringBuilder("|");
         for (int i = 0; i < width; i++) {
             line.append("───────────────");
-            line.append("+");
+            line.append("|");
         }
         return line.toString();
     }
