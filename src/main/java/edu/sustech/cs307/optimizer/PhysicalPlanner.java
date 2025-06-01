@@ -36,9 +36,9 @@ public class PhysicalPlanner {
             return handleInsert(dbManager, insertOperator);
         } else if (logicalOp instanceof LogicalUpdateOperator updateOperator) {
             return handleUpdate(dbManager, updateOperator);
-        }
-
-        else {
+        } else if (logicalOp instanceof LogicalDeleteOperator deleteOperator) {
+            return handleDelete(dbManager, deleteOperator);
+        } else {
             throw new DBException(ExceptionTypes.UnsupportedOperator(logicalOp.getClass().getSimpleName()));
         }
     }
@@ -194,5 +194,24 @@ public class PhysicalPlanner {
             throw new DBException(ExceptionTypes.InvalidSQL("INSERT", "Unsupported expression list"));
         }
         return new UpdateOperator(scanner, logicalUpdateOp.getTableName(), logicalUpdateOp.getColumns().get(0), logicalUpdateOp.getExpression());
+    }
+
+    private static PhysicalOperator handleDelete(DBManager dbManager, LogicalDeleteOperator logicalDeleteOp)
+            throws DBException {
+        // 获取表元数据
+        TableMeta tableMeta = dbManager.getMetaManager().getTable(logicalDeleteOp.getTableName());
+
+        // 创建SeqScan操作符用于扫描表中所有记录
+        SeqScanOperator scanOperator = new SeqScanOperator(logicalDeleteOp.getTableName(), dbManager);
+
+        PhysicalOperator operator = scanOperator;
+
+        // 如果有WHERE条件，添加Filter操作符进行过滤
+        if (logicalDeleteOp.getWhereCondition() != null) {
+            operator = new FilterOperator(operator,logicalDeleteOp.getWhereCondition());
+        }
+
+        // 创建Delete操作符执行实际删除
+        return new DeleteOperator(logicalDeleteOp.getTableName(), operator, dbManager);
     }
 }

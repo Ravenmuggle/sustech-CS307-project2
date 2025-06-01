@@ -37,14 +37,16 @@ public class LogicalPlanner {
             operator = handleInsert(dbManager, insertStmt);
         } else if (stmt instanceof Update updateStmt) {
             operator = handleUpdate(dbManager, updateStmt);
+        }
+        //todo: add condition of handleDelete (tried)
+        // functional
+        else if (stmt instanceof Delete deleteStmt) {
+            operator = handleDelete(dbManager, deleteStmt);
         } else if (stmt instanceof Drop dropTableStmt) {
             DropTableExector dropTable = new DropTableExector(dropTableStmt,dbManager,sql);
             dropTable.execute();
             return null;
-        }
-        //todo: add condition of handleDelete
-        // functional
-        else if (stmt instanceof CreateTable createTableStmt) {
+        } else if (stmt instanceof CreateTable createTableStmt) {
             CreateTableExecutor createTable = new CreateTableExecutor(createTableStmt, dbManager, sql);
             createTable.execute();
             return null;
@@ -107,5 +109,7 @@ public class LogicalPlanner {
                 updateStmt.getWhere());
     }
 
-
+    private static LogicalOperator handleDelete(DBManager dbManager, Delete deleteStmt) {
+        return new LogicalDeleteOperator(deleteStmt.getTable().getName(), deleteStmt.getWhere());
+    }
 }

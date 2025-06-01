@@ -79,7 +79,7 @@ public class DBManager {
 
     public void descTable(String table_name) throws DBException {
         //throw new RuntimeException("Not implemented yet");
-        //todo: complete describe table
+        //todo: complete describe table (finished)
         // | -- TABLE Field -- | -- Column Type --|
         // | --  ${table field} --| -- ${table type} --|
         TableMeta tableMeta = metaManager.getTable(table_name);
@@ -143,7 +143,6 @@ public class DBManager {
 
         bufferPool.DeleteAllPages(data_file);
         recordManager.DeleteFile(data_file);
-
     }
 
 
