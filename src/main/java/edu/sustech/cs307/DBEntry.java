@@ -93,14 +93,14 @@ public class DBEntry {
                     }
                     Logger.info(getStartEndLine(physicalOperator.outputSchema().size(), true));
                     Logger.info(getHeaderString(physicalOperator.outputSchema()));
-                    Logger.info(getSperator(physicalOperator.outputSchema().size()));
                     physicalOperator.Begin();
                     while (physicalOperator.hasNext()) {
+                        Logger.info(getSperator(physicalOperator.outputSchema().size()));
                         physicalOperator.Next();
                         Tuple tuple = physicalOperator.Current();
                         Logger.info(getRecordString(tuple));
-                        Logger.info(getSperator(physicalOperator.outputSchema().size()));
                     }
+                    Logger.info(getStartEndLine(physicalOperator.outputSchema().size(), false));
                     physicalOperator.Close();
                     dbManager.getBufferPool().FlushAllPages("");
                 } catch (DBException e) {
