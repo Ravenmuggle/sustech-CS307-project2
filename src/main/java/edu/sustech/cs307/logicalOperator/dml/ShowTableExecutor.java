@@ -14,21 +14,7 @@ public class ShowTableExecutor implements DMLExecutor{
         this.showTablesStatement=showTablesStatement;
         this.dbManager=dbManager;
     }
-    public void execute() throws DBException {
-            try{
-                showTables();
-            }
-            catch(Exception e) {
-               throw new DBException(ExceptionTypes.UnsupportedCommand(String.format("SHOW")));
-            }
-    }
-    private void showTables() throws DBException {
-        Logger.info("|-----------|");
-        Logger.info("|  Tables   |");
-        Logger.info("|-----------|");
-        for (String table:dbManager.getMetaManager().getTableNames()){
-            Logger.info("|     "+table+"     |");
-        }
-        Logger.info("|-----------|");
+    public void execute() {
+        dbManager.showTables();
     }
 }

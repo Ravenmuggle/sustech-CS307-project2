@@ -8,11 +8,15 @@ import edu.sustech.cs307.meta.TableMeta;
 import edu.sustech.cs307.storage.BufferPool;
 import edu.sustech.cs307.storage.DiskManager;
 import edu.sustech.cs307.storage.PagePosition;
+import edu.sustech.cs307.tuple.Tuple;
+import org.apache.commons.lang3.StringUtils;
+import org.pmw.tinylog.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 
 public class DBManager {
     private final MetaManager metaManager;
@@ -57,11 +61,20 @@ public class DBManager {
      * Each table name is displayed in a separate row within the ASCII borders.
      */
     public void showTables() {
-        throw new RuntimeException("Not implement");
-        //todo: complete show table
+        //throw new RuntimeException("Not implement");
+        //todo: complete show table (finished)
         // | -- TABLE -- |
         // | -- ${table} -- |
         // | ----------- |
+        Set <String> tableNames = metaManager.getTableNames();
+        Logger.info(getStartEndLine(1, true));
+        Logger.info(getString("Tables"));
+        Logger.info(getSperator(1));
+        for (String tableName : tableNames) {
+            //Logger.info(getSperator(1));
+            Logger.info(getString(tableName));
+        }
+        Logger.info(getStartEndLine(1, false));
     }
 
     public void descTable(String table_name) {
@@ -173,5 +186,40 @@ public class DBManager {
         this.bufferPool.FlushAllPages(null);
         DiskManager.dump_disk_manager_meta(this.diskManager);
         this.metaManager.saveToJson();
+    }
+
+    private static String getString(String string) {
+        StringBuilder stringBuilder = new StringBuilder("|");
+        String centeredText = StringUtils.center(string, 15, ' ');
+        stringBuilder.append(centeredText).append("|");
+        return stringBuilder.toString();
+    }
+
+    private static String getSperator(int width) {
+        // ───────────────
+        StringBuilder line = new StringBuilder("+");
+        for (int i = 0; i < width; i++) {
+            line.append("───────────────");
+            line.append("+");
+        }
+        return line.toString();
+    }
+
+    private static String getStartEndLine(int width, boolean header) {
+        StringBuilder end_line;
+        if (header) {
+            end_line = new StringBuilder("┌");
+        } else {
+            end_line = new StringBuilder("└");
+        }
+        for (int i = 0; i < width; i++) {
+            end_line.append("───────────────");
+            if (header) {
+                end_line.append("┐");
+            } else {
+                end_line.append("┘");
+            }
+        }
+        return end_line.toString();
     }
 }
