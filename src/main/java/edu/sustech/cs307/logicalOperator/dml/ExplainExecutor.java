@@ -23,14 +23,14 @@ public class ExplainExecutor implements DMLExecutor {
 
     @Override
     public void execute() throws DBException {
-        //todo: finish this function here, and add log info (tried)
+        //todo: finish this function here, and add log info (finished)
         try {
             // 记录开始执行 EXPLAIN 语句的日志信息
-            Logger.info("Starting to execute EXPLAIN statement.");
+            //Logger.info("Starting to execute EXPLAIN statement.");
 
             // 提取要解释的 SQL 语句
             String sqlToExplain = explainStatement.getStatement().toString();
-            Logger.info("SQL statement to explain: {}", sqlToExplain);
+            //Logger.info("SQL statement to explain: {}", sqlToExplain);
 
             // 使用 LogicalPlanner 生成逻辑计划
             Logger.debug("Generating logical plan for the SQL statement.");
@@ -38,10 +38,7 @@ public class ExplainExecutor implements DMLExecutor {
 
             // 检查逻辑计划是否生成成功
             if (logicalPlan != null) {
-                Logger.info("Logical plan generated successfully: {}", logicalPlan.toString());
-                // 进一步将逻辑计划转换为物理计划并记录日志
-                PhysicalOperator physicalPlan = PhysicalPlanner.generateOperator(dbManager, logicalPlan);
-                Logger.info("Physical plan generated successfully: {}", physicalPlan.toString());
+                Logger.info("Logical plan generated successfully: \n{}", logicalPlan.toString());
             } else {
                 Logger.error("Failed to generate logical plan for the SQL statement.");
             }
