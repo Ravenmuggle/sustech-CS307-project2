@@ -326,6 +326,7 @@ public class PhysicalPlanner {
         TableMeta tableMeta = dbManager.getMetaManager().getTable(logicalDeleteOp.getTableName());
 
         // 创建SeqScan操作符用于扫描表中所有记录
+        // TODO: Implement IndexScan
         SeqScanOperator scanOperator = new SeqScanOperator(logicalDeleteOp.getTableName(), dbManager);
 
         PhysicalOperator operator = scanOperator;

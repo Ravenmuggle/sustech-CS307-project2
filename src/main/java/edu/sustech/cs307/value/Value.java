@@ -52,34 +52,22 @@ public class Value {
                 buffer1.putLong((long) value);
                 yield buffer1.array();
             }
-            case FLOAT -> {
+            case FLOAT, DOUBLE -> {
                 ByteBuffer buffer2 = ByteBuffer.allocate(64);
                 buffer2.putDouble((double) value);
                 yield buffer2.array();
             }
-            case CHAR -> {
+            case CHAR, VARCHAR -> {
                 String str = (String) value;
                 ByteBuffer buffer3 = ByteBuffer.allocate(64);
                 buffer3.putInt(str.length());
                 buffer3.put(str.getBytes());
                 yield buffer3.array();
             }
-            case VARCHAR -> {
-                String str = (String) value;
-                ByteBuffer buffer4 = ByteBuffer.allocate(64);
-                buffer4.putInt(str.length());
-                buffer4.put(str.getBytes());
-                yield buffer4.array();
-            }
-            case DOUBLE -> {
-                ByteBuffer buffer5 = ByteBuffer.allocate(64);
-                buffer5.putDouble((double) value);
-                yield buffer5.array();
-            }
             case UNKNOWN -> {
-                ByteBuffer buffer6 = ByteBuffer.allocate(64);
+                ByteBuffer buffer4 = ByteBuffer.allocate(64);
 
-                yield buffer6.array();
+                yield buffer4.array();
             }
 
             default -> throw new RuntimeException("Unsupported value type: " + type);
@@ -100,26 +88,16 @@ public class Value {
                 ByteBuffer buffer1 = ByteBuffer.wrap(bytes);
                 yield new Value(buffer1.getLong());
             }
-            case FLOAT -> {
+            case FLOAT, DOUBLE -> {
                 ByteBuffer buffer2 = ByteBuffer.wrap(bytes);
-                yield new Value(buffer2.getDouble());
+                yield new Value(buffer2.getDouble()); // 从字节数组解析为 double 值
             }
-            case CHAR -> {
+            case CHAR, VARCHAR -> {
                 ByteBuffer buffer3 = ByteBuffer.wrap(bytes);
                 var length = buffer3.getInt();
                 // int is 4 byte
                 String s = new String(bytes, 4, length);
                 yield new Value(s);
-            }
-            case VARCHAR -> {
-                ByteBuffer buffer4 = ByteBuffer.wrap(bytes);
-                var length = buffer4.getInt();
-                String s = new String(bytes, 4, length);
-                yield new Value(s);
-            }
-            case DOUBLE -> {
-                ByteBuffer buffer5 = ByteBuffer.wrap(bytes);
-                yield new Value(buffer5.getDouble()); // 从字节数组解析为 double 值
             }
             case UNKNOWN -> {
                 // 对 UNKNOWN 类型的处理逻辑

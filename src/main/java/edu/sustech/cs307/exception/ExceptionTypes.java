@@ -21,7 +21,8 @@ public enum ExceptionTypes {
     INSERT_COLUMN_NAME_NOT_MATCH,
     INSERT_COLUMN_TYPE_NOT_MATCH,
     GET_VALUE_FROM_TEMP_TUPLE,
-    NOT_SUPPORTED_OPERATION
+    NOT_SUPPORTED_OPERATION,
+    UNKNOWN_EXCEPTION
     ;
 
     private String error_result;
@@ -151,8 +152,13 @@ public enum ExceptionTypes {
 
     static public ExceptionTypes NotSupportedOperation(Expression expression) {
         NOT_SUPPORTED_OPERATION.SetErrorResult(
-                String.format("Unsupported operation: %s", expression)
-        );
+                String.format("Unsupported operation: %s", expression));
         return NOT_SUPPORTED_OPERATION;
+    }
+
+    static public ExceptionTypes Unknown() {
+        UNKNOWN_EXCEPTION.SetErrorResult(
+                String.format("Unknown exception"));
+        return UNKNOWN_EXCEPTION;
     }
 }
