@@ -33,7 +33,7 @@ public class RecordManager {
      * @throws DBException 如果记录大小无效或文件创建失败
      */
     public void CreateFile(String filename, int record_size) throws DBException {
-        if (record_size <= 0 || record_size > MAX_RECORD_SIZE) {
+        if (record_size < 0 || record_size > MAX_RECORD_SIZE) {
             throw new DBException(ExceptionTypes.InvalidTableWidth(record_size));
         }
         diskManager.CreateFile(filename);
