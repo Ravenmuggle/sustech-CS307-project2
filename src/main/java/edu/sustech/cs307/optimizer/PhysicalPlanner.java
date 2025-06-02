@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang3.ObjectUtils.Null;
+
 public class PhysicalPlanner {
     public static PhysicalOperator generateOperator(DBManager dbManager, LogicalOperator logicalOp) throws DBException {
         if (logicalOp instanceof LogicalTableScanOperator tableScanOperator) {
@@ -95,105 +97,227 @@ public class PhysicalPlanner {
      * @throws DBException 如果存在列不匹配、类型不匹配或无效SQL语法时抛出
      */
     @SuppressWarnings("deprecation") // for ExpressionList<?>::getExpressions
+//     private static PhysicalOperator handleInsert(DBManager dbManager, LogicalInsertOperator logicalInsertOp)
+//         throws DBException {
+//     var tableMeta = dbManager.getMetaManager().getTable(logicalInsertOp.tableName);
+
+//     // Process columns
+//     List<String> columns = new ArrayList<>();
+//     List<Value> values = new ArrayList<>();
+
+//     if (logicalInsertOp.columns != null && !logicalInsertOp.columns.isEmpty()) {
+//         if (tableMeta.columns.size() < logicalInsertOp.columns.size()) {
+//             throw new DBException(ExceptionTypes.InsertColumnSizeMismatch());
+//         }
+
+//         // Map specified columns to table columns
+//         for (ColumnMeta columnMeta : tableMeta.columns_list) {
+//             boolean columnSpecified = false;
+//             for (int i = 0; i < logicalInsertOp.columns.size(); i++) {
+//                 String colName = logicalInsertOp.columns.get(i).getColumnName();
+//                 if (columnMeta.name.equals(colName)) {
+//                     columns.add(colName);
+//                     columnSpecified = true;
+//                     break;
+//                 }
+//             }
+//             // 如果列未指定，填充为 NULL
+//             if (!columnSpecified) {
+//                 columns.add(columnMeta.name);
+//                 values.add(null); // 插入 NULL 值
+//             }
+//         }
+//     } else {
+//         // 如果未指定列，使用所有表列并填充默认值或 NULL
+//         for (ColumnMeta columnMeta : tableMeta.columns_list) {
+//             columns.add(columnMeta.name);
+//             values.add(null); // 插入 NULL 值
+//         }
+//     }
+
+//     // Validate and parse VALUES clause
+//     if (!(logicalInsertOp.values instanceof Values)) {
+//         throw new DBException(ExceptionTypes.InvalidSQL("INSERT", "Values must be an expression list"));
+//     }
+//     ExpressionList<?> valuesList = ((Values) logicalInsertOp.values).getExpressions();
+//     if (valuesList.size() > columns.size()) {
+//         throw new DBException(ExceptionTypes.InsertColumnSizeMismatch());
+//     }
+
+//     // Parse values and fill missing columns with NULL
+//     parseValue(values, valuesList, tableMeta, columns);
+
+//     return new InsertOperator(logicalInsertOp.tableName, columns, values, dbManager);
+// }
     private static PhysicalOperator handleInsert(DBManager dbManager, LogicalInsertOperator logicalInsertOp)
             throws DBException {
         var tableMeta = dbManager.getMetaManager().getTable(logicalInsertOp.tableName);
         // Process columns
         List<String> columns = new ArrayList<>();
+        List<Value> values = new ArrayList<>();
+        ExpressionList<?> valuesList = ((Values) logicalInsertOp.values).getExpressions();
         if (logicalInsertOp.columns != null) {
-            // the length must equal to the number of columns in the table
-            if (tableMeta.columns.size() != logicalInsertOp.columns.size()) {
+            if (tableMeta.columns.size() < logicalInsertOp.columns.size()) {
+                System.out.println(tableMeta.columns.size());
                 throw new DBException(ExceptionTypes.InsertColumnSizeMismatch());
             }
-            for (int i = 0; i < logicalInsertOp.columns.size(); i++) {
+            else if (logicalInsertOp.columns.size() != 0) {
+                boolean insertValid = true;
+                String exitColunm="";  //which column does not exist
+                for (int i = 0; i < logicalInsertOp.columns.size(); i++) {
                 String colName = logicalInsertOp.columns.get(i).getColumnName();
-                if (tableMeta.getColumnMeta(colName) == null) {
-                    throw new DBException(ExceptionTypes.ColumnDoseNotExist(colName));
+                for (ColumnMeta columnMeta : tableMeta.columns_list) {
+                    if (columnMeta.name.equals(colName)) {
+                        insertValid = true;
+                        break;
+                    } else {
+                        exitColunm = colName;
+                        insertValid = false;
+                    }
                 }
-                if (!tableMeta.columns_list.get(i).name.equals(colName)) {
-                    throw new DBException(ExceptionTypes.InsertColumnNameMismatch());
                 }
-                columns.add(colName);
+                if (insertValid == false) {
+                    throw new DBException(ExceptionTypes.ColumnDoseNotExist(exitColunm));
+                }
+                else{
+                    System.out.println(tableMeta.columns_list);
+                    for (int k = 0; k < tableMeta.columns_list.size(); k++) {
+                        ColumnMeta columnMeta=tableMeta.columns_list.get(k);
+                        boolean tableExist=false;
+                        for(int j=0;j<logicalInsertOp.columns.size();j++){
+                            String colName = logicalInsertOp.columns.get(j).getColumnName();
+                            // Check if the column exists in the table
+                            System.out.println(colName);
+                            if (columnMeta.name.equals(colName)) {
+                                columns.add(colName);
+                                System.out.print(colName);
+                                parseValue(values, valuesList, tableMeta,j,k);
+                                tableExist=true;
+                                break;
+                            }   
+                        }
+                        System.out.println(tableExist);
+                        if (!tableExist) {
+                            columns.add(columnMeta.name);
+                            values.add(new Value());
+                        }
+                    }
+                }
             }
-
-        } else {
+            }
+         else {
             // If no columns specified, use all table columns in order
             for (ColumnMeta columnMeta : tableMeta.columns_list) {
                 columns.add(columnMeta.name);
             }
-        }
         if (!(logicalInsertOp.values instanceof Values)) {
             throw new DBException(ExceptionTypes.InvalidSQL("INSERT", "Values must be an expression list"));
         }
-        ExpressionList<?> valuesList = ((Values) logicalInsertOp.values).getExpressions();
-        if (columns.size() != valuesList.size()) {
-            var element = valuesList.get(0);
-            if (element instanceof ParenthesedExpressionList<?> parenthesed) {
-                // check the children reexpressions
-                for (Expression expr : valuesList) {
-                    if (expr instanceof ParenthesedExpressionList<?> expressionList) {
-                        if (expressionList.getExpressions().size() != columns.size()) {
-                            throw new DBException(ExceptionTypes.InsertColumnSizeMismatch());
-                        }
-                    } else {
-                        throw new DBException(ExceptionTypes.InsertColumnSizeMismatch());
-                    }
-                }
-            } else {
-                throw new DBException(ExceptionTypes.InsertColumnSizeMismatch());
-            }
-        }
 
-        List<Value> values = new ArrayList<>();
-        parseValue(values, valuesList, tableMeta);
-        // will always be same size tuple
+    }
 
-        // check the
-
+        // if (columns.size() != valuesList.size()) {
+        //     var element = valuesList.get(0);
+        //     if (element instanceof ParenthesedExpressionList<?> parenthesed) {
+        //         // check the children reexpressions
+        //         for (Expression expr : valuesList) {
+        //             if (expr instanceof ParenthesedExpressionList<?> expressionList) {
+        //                 if (expressionList.getExpressions().size() != columns.size()) {
+        //                     throw new DBException(ExceptionTypes.InsertColumnSizeMismatch());
+        //                 }
+        //             } else {
+        //                 throw new DBException(ExceptionTypes.InsertColumnSizeMismatch());
+        //             }
+        //         }
+        //     } else {
+        //         throw new DBException(ExceptionTypes.InsertColumnSizeMismatch());
+        //     }
+        // }
         return new InsertOperator(logicalInsertOp.tableName, columns,
                 values, dbManager);
     }
 
     @SuppressWarnings("deprecation")
-    private static void parseValue(List<Value> values, ExpressionList<?> valuesList, TableMeta tableMeta)
+    private static void parseValue(List<Value> values, ExpressionList<?> valuesList, TableMeta tableMeta, int i,int j)
             throws DBException {
-        for (int i = 0; i < valuesList.size(); i++) {
-            var expr = valuesList.getExpressions().get(i);
-            if (expr instanceof StringValue string_value) {
-                if (tableMeta.columns_list.get(i).type != ValueType.CHAR) {
-                    throw new DBException(ExceptionTypes.InsertColumnTypeMismatch());
-                }
-                String value_str = string_value.getValue();
-                if (value_str.length() > 64) {
-                    value_str = value_str.substring(0, 64);
-                }
-                values.add(new Value(value_str));
-            } else if (expr instanceof DoubleValue float_value) {
-                if (tableMeta.columns_list.get(i).type != ValueType.FLOAT) {
-                    throw new DBException(ExceptionTypes.InsertColumnTypeMismatch());
-                }
-                values.add(new Value(float_value.getValue()));
-            } else if (expr instanceof LongValue long_value) {
-                if (tableMeta.columns_list.get(i).type != ValueType.INTEGER) {
-                    throw new DBException(ExceptionTypes.InsertColumnTypeMismatch());
-                }
-                values.add(new Value(long_value.getValue()));
-            } else if (expr instanceof ParenthesedExpressionList<?> expressionList) {
-                parseValue(values, expressionList, tableMeta);
-            } else {
-                throw new DBException(ExceptionTypes.InvalidSQL("INSERT", "Unsupported value type in VALUES clause"));
+        var expr = valuesList.get(i);
+        System.out.println(expr);
+        if (expr instanceof StringValue string_value) {
+            if (tableMeta.columns_list.get(j).type != ValueType.CHAR
+                    && tableMeta.columns_list.get(j).type != ValueType.VARCHAR) {
+                throw new DBException(ExceptionTypes.InsertColumnTypeMismatch());
             }
+            String value_str = string_value.getValue();
+            if (value_str.length() > 64) {
+                value_str = value_str.substring(0, 64);
+            }
+            values.add(new Value(value_str));
+        } else if (expr instanceof DoubleValue float_value) {
+            if (tableMeta.columns_list.get(j).type != ValueType.FLOAT
+                    && tableMeta.columns_list.get(j).type != ValueType.DOUBLE) {
+                throw new DBException(ExceptionTypes.InsertColumnTypeMismatch());
+            }
+            values.add(new Value(float_value.getValue()));
+        } else if (expr instanceof LongValue long_value) {
+            if (tableMeta.columns_list.get(j).type != ValueType.INTEGER) {
+                throw new DBException(ExceptionTypes.InsertColumnTypeMismatch());
+            }
+            values.add(new Value(long_value.getValue()));
+        } else if (expr instanceof Null null_value) {
+            if (tableMeta.columns_list.get(j).type != ValueType.UNKNOWN) {
+                throw new DBException(ExceptionTypes.InsertColumnTypeMismatch());
+            }
+        } else {
+            throw new DBException(ExceptionTypes.InvalidSQL("INSERT", "Unsupported value type in VALUES clause"));
         }
     }
+    // private static void parseValue(List<Value> values, ExpressionList<?>
+    // valuesList, TableMeta tableMeta, List<String> columns)
+    // throws DBException {
+    // for (int i = 0; i < columns.size(); i++) {
+    // if (i < valuesList.size()) {
+    // var expr = valuesList.getExpressions().get(i);
+    // if (expr instanceof StringValue string_value) {
+    // if (tableMeta.columns_list.get(i).type != ValueType.CHAR) {
+    // throw new DBException(ExceptionTypes.InsertColumnTypeMismatch());
+    // }
+    // String value_str = string_value.getValue();
+    // if (value_str.length() > 64) {
+    // value_str = value_str.substring(0, 64);
+    // }
+    // values.add(new Value(value_str));
+    // } else if (expr instanceof DoubleValue float_value) {
+    // if (tableMeta.columns_list.get(i).type != ValueType.FLOAT) {
+    // throw new DBException(ExceptionTypes.InsertColumnTypeMismatch());
+    // }
+    // values.add(new Value(float_value.getValue()));
+    // } else if (expr instanceof LongValue long_value) {
+    // if (tableMeta.columns_list.get(i).type != ValueType.INTEGER) {
+    // throw new DBException(ExceptionTypes.InsertColumnTypeMismatch());
+    // }
+    // values.add(new Value(long_value.getValue()));
+    // } else if (expr instanceof ParenthesedExpressionList<?> expressionList) {
+    // parseValue(values, expressionList, tableMeta, columns);
+    // } else {
+    // throw new DBException(ExceptionTypes.InvalidSQL("INSERT", "Unsupported value
+    // type in VALUES clause"));
+    // }
+    // } else {
+    // // 如果值未指定，填充为 NULL
+    // values.add(null);
+    // }
+    // }
+    // }
 
-
-    private static PhysicalOperator handleUpdate(DBManager dbManager, LogicalUpdateOperator logicalUpdateOp) throws DBException {
+    private static PhysicalOperator handleUpdate(DBManager dbManager, LogicalUpdateOperator logicalUpdateOp)
+            throws DBException {
         // TODO: Implement handleUpdate
         PhysicalOperator scanner = generateOperator(dbManager, logicalUpdateOp.getChild());
-        if (logicalUpdateOp.getColumns().size() != 1 ) {
+        if (logicalUpdateOp.getColumns().size() != 1) {
             throw new DBException(ExceptionTypes.InvalidSQL("INSERT", "Unsupported expression list"));
         }
-        return new UpdateOperator(scanner, logicalUpdateOp.getTableName(), logicalUpdateOp.getColumns().get(0), logicalUpdateOp.getExpression());
+        return new UpdateOperator(scanner, logicalUpdateOp.getTableName(), logicalUpdateOp.getColumns().get(0),
+                logicalUpdateOp.getExpression());
     }
 
     private static PhysicalOperator handleDelete(DBManager dbManager, LogicalDeleteOperator logicalDeleteOp)

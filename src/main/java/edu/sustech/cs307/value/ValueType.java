@@ -2,8 +2,10 @@ package edu.sustech.cs307.value;
 
 public enum ValueType {
     CHAR,
+    VARCHAR,
     INTEGER,
     FLOAT,
+    DOUBLE,
     UNKNOWN;
 
     /**
@@ -18,6 +20,9 @@ public enum ValueType {
             case INTEGER -> "int";
             case FLOAT -> "float";
             case UNKNOWN -> "unknown";
+            case VARCHAR -> "varchar";  
+            case DOUBLE -> "double";
+
         };
     }
 }
