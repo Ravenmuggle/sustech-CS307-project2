@@ -32,6 +32,7 @@ public class Value {
         this.value = value;
         type = ValueType.CHAR;
     }
+
     public Value(){
             this.value=0L; // 默认值为 0L
             this.type=ValueType.UNKNOWN;

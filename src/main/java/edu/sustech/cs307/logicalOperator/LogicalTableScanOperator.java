@@ -11,7 +11,7 @@ public class LogicalTableScanOperator extends LogicalOperator {
     private final DBManager dbManager;
 
     public LogicalTableScanOperator(String tableName, DBManager dbManager) throws DBException {
-        super(Collections.emptyList()); // TableScan 没有子节点
+        super(Collections.emptyList()); // TableScan 没有父节点
         this.tableName = tableName;
         this.dbManager = dbManager;
         if (!dbManager.isTableExists(tableName)) {

@@ -51,8 +51,19 @@ public class CreateTableExecutor implements DMLExecutor {
                 offset += Value.INT_SIZE;
             } else if (colType.getDataType().equalsIgnoreCase("float")) {
                 colMapping.add(new ColumnMeta(table, colName, ValueType.FLOAT, Value.FLOAT_SIZE, offset));
-                offset += Value.FLOAT_SIZE;
-            } else {
+                offset += Value.FLOAT_SIZE;}
+            // }else if (colType.getDataType().equalsIgnoreCase("varchar")) {
+            //     // Handle varchar type
+            //     int length = colType.getArgumentsStringList() != null && !colType.getArgumentsStringList().isEmpty()
+            //             ? Integer.parseInt(colType.getArgumentsStringList().get(0))
+            //             : Value.VARCHAR_DEFAULT_SIZE;
+            //     colMapping.add(new ColumnMeta(table, colName, ValueType.VARCHAR, length, offset));
+            //     offset += length;
+            // } 
+            else if (colType.getDataType().equalsIgnoreCase("double")){
+                colMapping.add(new ColumnMeta(table, colName, ValueType.DOUBLE, Value.DOUBLE_SIZE, offset));
+                offset += Value.DOUBLE_SIZE;}
+            else {
                 throw new DBException(ExceptionTypes.UnsupportedCommand(String.format("CREATE TABLE %s", table)));
             }
         }
