@@ -43,9 +43,7 @@ public class DeleteOperator implements PhysicalOperator {
                 if (rid != null) {
                     // 执行实际的删除操作
                     RecordFileHandle fileHandle = dbManager.getRecordManager().OpenFile(tableName);
-                    RecordPageHandle pageHandle = fileHandle.FetchPageHandle(rid.pageNum);
-                    Record currentRecord = fileHandle.GetRecord(rid);
-                    BitMap.reset(pageHandle.bitmap, rid.slotNum);
+                    fileHandle.DeleteRecord(rid);
                 }
                 numDeleted++;
             } else {
