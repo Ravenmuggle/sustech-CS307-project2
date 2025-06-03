@@ -105,7 +105,7 @@ public class BufferPool {
                 return false;
             }
             page.pin_count--;
-            if (page.pin_count > 0) {
+            if (page.pin_count == 0) {
                 lruReplacer.Unpin(frame_id);
             }
             page.dirty |= is_dirty;
@@ -171,7 +171,7 @@ public class BufferPool {
         System.out.println(frame_id);
         if (frame_id != null) {
             Page page = pages.get(frame_id);
-            System.out.println(page.pin_count);
+            //System.out.println(page.pin_count);
             if (page.pin_count > 0) {
                 return false;
             }
@@ -179,11 +179,12 @@ public class BufferPool {
                 diskManager.FlushPage(page);
                 page.dirty = false;
             }
-            pages.remove(frame_id);
-            System.out.println(frame_id+"removed");
+            page.position = null;
+            page.pin_count = 0;// pin count must be 0
+            //System.out.println(frame_id+"removed");
             pageMap.remove(position);
             freeList.add(frame_id);
-            // pin count must be 0
+            lruReplacer.remove(frame_id);
             return true;
         } else {
             return false;
@@ -259,7 +260,7 @@ public class BufferPool {
         if (!freeList.isEmpty()) {
             return freeList.removeFirst();
         } else {
-            int frame_id = lruReplacer.Victim();
+            int frame_id = lruReplacer.Victim2();
             if (frame_id != -1) {
                 Page page = pages.get(frame_id);
                 if (page.dirty) {

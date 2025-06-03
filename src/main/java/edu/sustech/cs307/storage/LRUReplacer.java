@@ -25,33 +25,49 @@ public class LRUReplacer {
         }
     }
 
-    public void Pin(int frameId) {
-            if (pinnedFrames.contains(frameId)) {
-                //doing nothing
-            } else if (LRUHash.contains(frameId)) {
-                LRUHash.remove(frameId);
-                LRUList.removeFirstOccurrence(frameId);
-                pinnedFrames.add(frameId);
-            } else {
-                if (size()+1 > maxSize) {
-                    throw new RuntimeException("REPLACER IS FULL");
-                }
-                else {
-                    pinnedFrames.add(frameId);
-                }
+    public int Victim2() {
+        int victim = Victim();
+        if (victim != -1) return victim;
+        for (int i = 0; i < maxSize; i++) {
+            if(!pinnedFrames.contains(i)){
+                return i;
             }
+        }
+        return -1;
+    }
+
+    public void remove(int LRU) {
+        LRUList.removeFirstOccurrence(LRU);
+        LRUHash.remove(LRU);
+    }
+
+    public void Pin(int frameId) {
+        if (pinnedFrames.contains(frameId)) {
+            //doing nothing
+        } else if (LRUHash.contains(frameId)) {
+            LRUHash.remove(frameId);
+            LRUList.removeFirstOccurrence(frameId);
+            pinnedFrames.add(frameId);
+        } else {
+            if (size()+1 > maxSize) {
+                throw new RuntimeException("REPLACER IS FULL");
+            }
+            else {
+                pinnedFrames.add(frameId);
+            }
+        }
     }
 
 
     public void Unpin(int frameId) throws RuntimeException {
-            if (pinnedFrames.contains(frameId)) {
-                pinnedFrames.remove(frameId);
-                LRUHash.add(frameId);
-                LRUList.addLast(frameId);
-            }
-          else{
-//                throw new RuntimeException("UNPIN PAGE NOT FOUND");
-          }
+        if (pinnedFrames.contains(frameId)) {
+            pinnedFrames.remove(frameId);
+            LRUHash.add(frameId);
+            LRUList.addLast(frameId);
+        }
+        else{
+            throw new RuntimeException("UNPIN PAGE NOT FOUND");
+        }
     }
 
 

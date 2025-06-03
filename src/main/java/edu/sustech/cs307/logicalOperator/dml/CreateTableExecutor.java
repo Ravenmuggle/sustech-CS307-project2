@@ -59,8 +59,11 @@ public class CreateTableExecutor implements DMLExecutor {
             //             : Value.VARCHAR_DEFAULT_SIZE;
             //     colMapping.add(new ColumnMeta(table, colName, ValueType.VARCHAR, length, offset));
             //     offset += length;
-            // } 
-            else if (colType.getDataType().equalsIgnoreCase("double")){
+            // }
+            else if (colType.getDataType().equalsIgnoreCase("varchar")){
+                colMapping.add(new ColumnMeta(table, colName, ValueType.VARCHAR, Value.VARCHAR_SIZE, offset));
+                offset += Value.VARCHAR_SIZE;
+            } else if (colType.getDataType().equalsIgnoreCase("double")){
                 colMapping.add(new ColumnMeta(table, colName, ValueType.DOUBLE, Value.DOUBLE_SIZE, offset));
                 offset += Value.DOUBLE_SIZE;}
             else {

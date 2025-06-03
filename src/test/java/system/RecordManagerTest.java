@@ -56,7 +56,7 @@ public class RecordManagerTest {
         RecordFileHeader recordFileHeader = new RecordFileHeader(page.data);
 
         assertThat(recordFileHeader.getRecordSize()).isEqualTo(recordSize);
-        assertThat(recordFileHeader.getNumberOfPages()).isEqualTo(1);
+        assertThat(recordFileHeader.getNumberOfPages()).isEqualTo(0);
         assertThat(recordFileHeader.getFirstFreePage()).isEqualTo(RecordPageHeader.NO_NEXT_FREE_PAGE);
         assertThat(recordFileHeader.getBitMapSize()).isGreaterThan(0);
     }

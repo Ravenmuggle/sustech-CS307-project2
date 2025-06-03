@@ -5,11 +5,11 @@ import java.nio.ByteBuffer;
 public class Value {
     public Object value;
     public ValueType type;
-    public static final int INT_SIZE = 64;
-    public static final int FLOAT_SIZE = 64;
+    public static final int INT_SIZE = 8;
+    public static final int FLOAT_SIZE = 8;
     public static final int CHAR_SIZE = 64;
     public static final int VARCHAR_SIZE = 64;
-    public static final int DOUBLE_SIZE = 64;
+    public static final int DOUBLE_SIZE = 8;
     public static final int UNKNOWN_SIZE = 64;
 
 
@@ -48,12 +48,12 @@ public class Value {
     public byte[] ToByte() {
         return switch (type) {
             case INTEGER -> {
-                ByteBuffer buffer1 = ByteBuffer.allocate(64);
+                ByteBuffer buffer1 = ByteBuffer.allocate(8);
                 buffer1.putLong((long) value);
                 yield buffer1.array();
             }
             case FLOAT, DOUBLE -> {
-                ByteBuffer buffer2 = ByteBuffer.allocate(64);
+                ByteBuffer buffer2 = ByteBuffer.allocate(8);
                 buffer2.putDouble((double) value);
                 yield buffer2.array();
             }
@@ -64,11 +64,12 @@ public class Value {
                 buffer3.put(str.getBytes());
                 yield buffer3.array();
             }
+            /*
             case UNKNOWN -> {
                 ByteBuffer buffer4 = ByteBuffer.allocate(64);
 
                 yield buffer4.array();
-            }
+            }*/
 
             default -> throw new RuntimeException("Unsupported value type: " + type);
         };
@@ -97,12 +98,13 @@ public class Value {
                 var length = buffer3.getInt();
                 // int is 4 byte
                 String s = new String(bytes, 4, length);
+                System.out.println(s);
                 yield new Value(s);
             }
-            case UNKNOWN -> {
+            //case UNKNOWN -> {
                 // 对 UNKNOWN 类型的处理逻辑
-                yield new Value(); // 默认设置为 null
-            }
+                //yield new Value(); // 默认设置为 null
+            //}
             default -> throw new RuntimeException("Unsupported value type: " + type);
         };
 
